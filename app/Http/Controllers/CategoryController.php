@@ -16,31 +16,24 @@ class CategoryController extends Controller
             ->firstOrFail();
 
         $sortBy = $request->get('sort_by', 'created-descending');
+        $perPage = 50;
+        $page = max((int) $request->get('page', 1), 1);
 
-        /*
-        |--------------------------------------------------------------------------
-        | IMPORTANTE
-        |--------------------------------------------------------------------------
-        | Tu base tiene dos formatos:
-        |
-        | 1. Nuevo/correcto:
-        |    category_slugs: ['aretes']
-        |
-        | 2. Viejo/roto:
-        |    category_slugs: '["aretes"]'
-        |
-        | Este controller soporta ambos temporalmente para que funcione ya.
-        |--------------------------------------------------------------------------
-        */
         $products = Product::where('status', 'active')
-            ->where(function ($query) use ($category) {
-                $query->where('category_slugs', $category->slug)
-                      ->orWhere('category_slugs', json_encode([$category->slug]));
-            })
             ->get()
             ->map(function ($product) {
                 return $this->normalizeProduct($product);
-            });
+            })
+            ->filter(function ($product) use ($category) {
+                $categorySlugs = $product->category_slugs ?? [];
+
+                if (!is_array($categorySlugs)) {
+                    return false;
+                }
+
+                return in_array($category->slug, $categorySlugs, true);
+            })
+            ->values();
 
         $products = $products->sort(function ($a, $b) use ($sortBy) {
             $priceA = collect($a->variants ?? [])->min('price') ?? 0;
@@ -67,9 +60,6 @@ class CategoryController extends Controller
                     return strtotime((string) ($b->created_at ?? '')) <=> strtotime((string) ($a->created_at ?? ''));
             }
         })->values();
-
-        $perPage = 50;
-        $page = max((int) $request->get('page', 1), 1);
 
         $paginated = new LengthAwarePaginator(
             $products->forPage($page, $perPage)->values(),
@@ -127,6 +117,18 @@ class CategoryController extends Controller
                     $product->{$field} = $decoded;
                 }
             }
+        }
+
+        if (!is_array($product->category_ids ?? null)) {
+            $product->category_ids = [];
+        }
+
+        if (!is_array($product->category_slugs ?? null)) {
+            $product->category_slugs = [];
+        }
+
+        if (!is_array($product->category_names ?? null)) {
+            $product->category_names = [];
         }
 
         if (!is_array($product->variants ?? null)) {

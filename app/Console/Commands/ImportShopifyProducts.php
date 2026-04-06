@@ -12,14 +12,14 @@ class ImportShopifyProducts extends Command
 {
     protected $signature = 'shopify:import
         {file=storage/app/products/cadenas.json : Ruta del JSON}
-        {--category=cadenas : Slug de la categoría destino}';
+        {--category= : Slug de la categoría destino (opcional)}';
 
-    protected $description = 'Importa productos Shopify a MongoDB con categorías estables';
+    protected $description = 'Importa productos Shopify a MongoDB con categorías automáticas o manuales';
 
     public function handle(): int
     {
         $filePath = base_path($this->argument('file'));
-        $categorySlug = Str::slug(trim((string) $this->option('category')));
+        $manualCategorySlug = trim((string) $this->option('category'));
 
         if (!File::exists($filePath)) {
             $this->error("No existe el archivo: {$filePath}");
@@ -38,17 +38,7 @@ class ImportShopifyProducts extends Command
             return self::SUCCESS;
         }
 
-        // Permite un solo producto o lista de productos
         $items = isset($json['shopify_id']) ? [$json] : $json;
-
-        $category = Category::firstOrCreate(
-            ['slug' => $categorySlug],
-            [
-                'name' => $this->humanizeSlug($categorySlug),
-                'is_active' => true,
-                'sort_order' => 0,
-            ]
-        );
 
         $created = 0;
         $updated = 0;
@@ -115,6 +105,64 @@ class ImportShopifyProducts extends Command
                     $mainImage = $images[0]['src'] ?? null;
                 }
 
+                $existing = Product::where('shopify_id', (int) $shopifyId)->first();
+
+                /*
+                |--------------------------------------------------------------------------
+                | CATEGORÍA PRINCIPAL
+                |--------------------------------------------------------------------------
+                | Si el usuario manda --category, se usa esa.
+                | Si no, se detecta automáticamente desde el title.
+                |--------------------------------------------------------------------------
+                */
+                $categorySlug = $manualCategorySlug !== ''
+                    ? Str::slug($manualCategorySlug)
+                    : $this->detectCategorySlug($name, $item);
+
+                if (!$categorySlug) {
+                    $categorySlug = 'otros';
+                }
+
+                $category = Category::firstOrCreate(
+                    ['slug' => $categorySlug],
+                    [
+                        'name' => $this->humanizeSlug($categorySlug),
+                        'is_active' => true,
+                        'sort_order' => 0,
+                    ]
+                );
+
+                $newCategoryIds = [(string) $category->id];
+                $newCategorySlugs = [$category->slug];
+                $newCategoryNames = [$category->name];
+
+                $existingCategoryIds = $existing
+                    ? $this->normalizeArrayField($existing->category_ids ?? [])
+                    : [];
+
+                $existingCategorySlugs = $existing
+                    ? $this->normalizeArrayField($existing->category_slugs ?? [])
+                    : [];
+
+                $existingCategoryNames = $existing
+                    ? $this->normalizeArrayField($existing->category_names ?? [])
+                    : [];
+
+                $mergedCategoryIds = array_values(array_unique(array_filter(array_merge(
+                    $existingCategoryIds,
+                    $newCategoryIds
+                ), fn ($value) => $value !== null && $value !== '')));
+
+                $mergedCategorySlugs = array_values(array_unique(array_filter(array_merge(
+                    $existingCategorySlugs,
+                    $newCategorySlugs
+                ), fn ($value) => $value !== null && $value !== '')));
+
+                $mergedCategoryNames = array_values(array_unique(array_filter(array_merge(
+                    $existingCategoryNames,
+                    $newCategoryNames
+                ), fn ($value) => $value !== null && $value !== '')));
+
                 $productData = [
                     'shopify_id' => (int) $shopifyId,
                     'shopify_handle' => $item['raw_handle'] ?? $item['slug'] ?? $baseProductSlug,
@@ -136,18 +184,19 @@ class ImportShopifyProducts extends Command
 
                     'main_image' => $mainImage,
 
-                    // claves estables
-                    'category_ids' => [(string) $category->id],
-                    'category_slugs' => [$category->slug],
-                    'category_names' => [$category->name],
+                    'category_ids' => $mergedCategoryIds,
+                    'category_slugs' => $mergedCategorySlugs,
+                    'category_names' => $mergedCategoryNames,
 
-                    'promotion_ids' => [],
+                    'promotion_ids' => $existing
+                        ? $this->normalizeArrayField($existing->promotion_ids ?? [])
+                        : [],
 
                     'variants' => $variants,
                     'images' => $images,
 
                     'status' => 'active',
-                    'is_featured' => false,
+                    'is_featured' => $existing ? (bool) ($existing->is_featured ?? false) : false,
 
                     'meta_title' => $name,
                     'meta_description' => Str::limit((string) $summary, 160),
@@ -158,16 +207,14 @@ class ImportShopifyProducts extends Command
                     'raw_product' => $item,
                 ];
 
-                $existing = Product::where('shopify_id', (int) $shopifyId)->first();
-
                 if ($existing) {
                     $existing->update($productData);
                     $updated++;
-                    $this->line("↻ Actualizado: {$name}");
+                    $this->line("↻ Actualizado: {$name} [{$category->slug}]");
                 } else {
                     Product::create($productData);
                     $created++;
-                    $this->line("✔ Creado: {$name}");
+                    $this->line("✔ Creado: {$name} [{$category->slug}]");
                 }
             } catch (\Throwable $e) {
                 $skipped++;
@@ -181,6 +228,44 @@ class ImportShopifyProducts extends Command
         $this->warn("Omitidos/Error: {$skipped}");
 
         return self::SUCCESS;
+    }
+
+    private function detectCategorySlug(string $name, array $item = []): ?string
+    {
+        $source = mb_strtolower(trim($name));
+
+        $map = [
+            'anillo' => 'anillos',
+            'topos' => 'topos',
+            'cadena' => 'cadenas',
+            'dije' => 'dijes',
+            'pulsera' => 'pulseras',
+            'arete' => 'aretes',
+            'argolla' => 'argollas',
+            'candonga' => 'candongas',
+            'ear cuff' => 'ear-cuffs',
+            'piercing' => 'piercings',
+            'tobillera' => 'tobilleras',
+            'broquel' => 'broqueles',
+            'collar' => 'collares',
+            'set' => 'sets',
+        ];
+
+        foreach ($map as $keyword => $slug) {
+            if (Str::startsWith($source, $keyword . ' ') || $source === $keyword) {
+                return $slug;
+            }
+        }
+
+        $rawHandle = mb_strtolower((string) ($item['raw_handle'] ?? $item['slug'] ?? ''));
+
+        foreach ($map as $keyword => $slug) {
+            if (Str::startsWith($rawHandle, Str::slug($keyword) . '-') || $rawHandle === Str::slug($keyword)) {
+                return $slug;
+            }
+        }
+
+        return null;
     }
 
     private function resolveProductSlug(array $item, string $name, int|string $shopifyId): string
@@ -227,7 +312,6 @@ class ImportShopifyProducts extends Command
             return 0;
         }
 
-        // Si viene en centavos desde Shopify (ej: 126500000), lo baja a 1265000
         if (is_numeric($value)) {
             $number = (float) $value;
             return $number >= 10000000 ? $number / 100 : $number;
@@ -281,5 +365,24 @@ class ImportShopifyProducts extends Command
         }
 
         return $result;
+    }
+
+    private function normalizeArrayField($value): array
+    {
+        if (is_array($value)) {
+            return array_values(array_filter($value, fn ($item) => $item !== null && $item !== ''));
+        }
+
+        if (is_string($value)) {
+            $decoded = json_decode($value, true);
+
+            if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                return array_values(array_filter($decoded, fn ($item) => $item !== null && $item !== ''));
+            }
+
+            return $value !== '' ? [$value] : [];
+        }
+
+        return [];
     }
 }
