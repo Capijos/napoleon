@@ -33,7 +33,6 @@ RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 775 storage bootstrap/cache
 
 COPY railway/nginx.conf /etc/nginx/sites-available/default
-COPY railway/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 EXPOSE 8080
 
