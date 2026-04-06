@@ -11,9 +11,11 @@
     "require": {
         "php": "^8.3",
         "inertiajs/inertia-laravel": "^2.0",
+        "jenssegers/mongodb": "*",
         "laravel/framework": "^13.0",
         "laravel/tinker": "^3.0",
-        "laravel/wayfinder": "^0.1.14"
+        "laravel/wayfinder": "^0.1.14",
+        "mongodb/laravel-mongodb": "*"
     },
     "require-dev": {
         "fakerphp/faker": "^1.24",

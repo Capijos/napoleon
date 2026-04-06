@@ -1,34 +1,41 @@
 <?php
 
-use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
+namespace Database\Seeders;
 
-return new class extends Migration
+use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
+
+class CategoriesMongoSeeder extends Seeder
 {
-    public function up(): void
+    public function run(): void
     {
-        Schema::create('categories', function (Blueprint $table) {
-            $table->id();
-
-            $table->foreignId('parent_id')
-                ->nullable()
-                ->constrained('categories')
-                ->nullOnDelete();
-
-            $table->string('name');
-            $table->string('slug')->unique();
-            $table->text('description')->nullable();
-            $table->string('image')->nullable();
-            $table->unsignedInteger('sort_order')->default(0);
-            $table->boolean('is_active')->default(true);
-
-            $table->timestamps();
-        });
+        // Insertamos algunas categorías de ejemplo
+        DB::collection('categories')->insert([
+            [
+                '_id' => 'cat_1',
+                'parent_id' => null,
+                'name' => 'Electronics',
+                'slug' => 'electronics',
+                'description' => 'Electronic products',
+                'image' => null,
+                'sort_order' => 0,
+                'is_active' => true,
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
+            ],
+            [
+                '_id' => 'cat_2',
+                'parent_id' => 'cat_1',
+                'name' => 'Mobile Phones',
+                'slug' => 'mobile-phones',
+                'description' => 'Smartphones and mobile devices',
+                'image' => null,
+                'sort_order' => 1,
+                'is_active' => true,
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
+            ],
+        ]);
     }
-
-    public function down(): void
-    {
-        Schema::dropIfExists('categories');
-    }
-};
+}

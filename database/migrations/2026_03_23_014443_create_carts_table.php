@@ -1,37 +1,30 @@
 <?php
 
-use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
+namespace Database\Seeders;
 
-return new class extends Migration
+use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
+
+class CartsMongoSeeder extends Seeder
 {
-    public function up(): void
+    public function run(): void
     {
-        Schema::create('carts', function (Blueprint $table) {
-            $table->id();
-
-            $table->foreignId('user_id')
-                ->nullable()
-                ->constrained('users')
-                ->nullOnDelete();
-
-            $table->enum('status', ['active', 'converted', 'abandoned'])->default('active');
-
-            $table->decimal('subtotal', 12, 2)->default(0);
-            $table->decimal('discount', 12, 2)->default(0);
-            $table->decimal('shipping_cost', 12, 2)->default(0);
-            $table->decimal('tax', 12, 2)->default(0);
-            $table->decimal('total', 12, 2)->default(0);
-
-            $table->string('currency', 10)->default('PEN');
-
-            $table->timestamps();
-        });
+        DB::collection('carts')->insert([
+            [
+                '_id' => 'cart_1', // Puedes usar ObjectId automáticamente si omites este campo
+                'user_id' => 'user_1', // referencia al usuario (no FK)
+                'status' => 'active', // posible valores: active, converted, abandoned
+                'subtotal' => 0.00,
+                'discount' => 0.00,
+                'shipping_cost' => 0.00,
+                'tax' => 0.00,
+                'total' => 0.00,
+                'currency' => 'PEN',
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
+            ],
+            // Puedes agregar más documentos aquí
+        ]);
     }
-
-    public function down(): void
-    {
-        Schema::dropIfExists('carts');
-    }
-};
+}

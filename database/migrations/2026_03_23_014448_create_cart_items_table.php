@@ -1,38 +1,30 @@
 <?php
 
-use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
+namespace Database\Seeders;
 
-return new class extends Migration
+use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
+
+class CartItemsMongoSeeder extends Seeder
 {
-    public function up(): void
+    public function run(): void
     {
-        Schema::create('cart_items', function (Blueprint $table) {
-            $table->id();
-
-            $table->foreignId('cart_id')
-                ->constrained('carts')
-                ->cascadeOnDelete();
-
-            $table->foreignId('product_id')
-                ->constrained('products')
-                ->cascadeOnDelete();
-
-            $table->string('product_name');
-            $table->string('product_sku')->nullable();
-            $table->string('product_image')->nullable();
-
-            $table->unsignedInteger('quantity')->default(1);
-            $table->decimal('unit_price', 12, 2);
-            $table->decimal('subtotal', 12, 2);
-
-            $table->timestamps();
-        });
+        DB::collection('cart_items')->insert([
+            [
+                '_id' => 'item_1', // opcional, MongoDB genera ObjectId automáticamente
+                'cart_id' => 'cart_1', // referencia al cart
+                'product_id' => 'product_1', // referencia al producto
+                'product_name' => 'Nombre del producto',
+                'product_sku' => 'SKU123',
+                'product_image' => 'imagen.jpg',
+                'quantity' => 1,
+                'unit_price' => 100.00,
+                'subtotal' => 100.00,
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
+            ],
+            // Puedes agregar más documentos aquí
+        ]);
     }
-
-    public function down(): void
-    {
-        Schema::dropIfExists('cart_items');
-    }
-};
+}

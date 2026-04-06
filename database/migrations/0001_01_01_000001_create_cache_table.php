@@ -1,35 +1,26 @@
 <?php
 
-use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
+namespace Database\Seeders;
 
-return new class extends Migration
+use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
+
+class CacheMongoSeeder extends Seeder
 {
-    /**
-     * Run the migrations.
-     */
-    public function up(): void
+    public function run(): void
     {
-        Schema::create('cache', function (Blueprint $table) {
-            $table->string('key')->primary();
-            $table->mediumText('value');
-            $table->integer('expiration')->index();
-        });
+        // Ejemplo de cache
+        DB::collection('cache')->insert([
+            'key' => 'example_cache_key',
+            'value' => 'Este es el valor cacheado',
+            'expiration' => time() + 3600, // timestamp de expiración
+        ]);
 
-        Schema::create('cache_locks', function (Blueprint $table) {
-            $table->string('key')->primary();
-            $table->string('owner');
-            $table->integer('expiration')->index();
-        });
+        // Ejemplo de cache lock
+        DB::collection('cache_locks')->insert([
+            'key' => 'example_cache_key',
+            'owner' => 'server_1',
+            'expiration' => time() + 60, // timestamp de expiración del lock
+        ]);
     }
-
-    /**
-     * Reverse the migrations.
-     */
-    public function down(): void
-    {
-        Schema::dropIfExists('cache');
-        Schema::dropIfExists('cache_locks');
-    }
-};
+}

@@ -1,31 +1,37 @@
 <?php
 
-use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
+namespace Database\Seeders;
 
-return new class extends Migration
+use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
+
+class IdentificationsMongoSeeder extends Seeder
 {
-    public function up(): void
+    public function run(): void
     {
-        Schema::create('identifications', function (Blueprint $table) {
-            $table->id();
-            $table->string('first_name');
-            $table->string('last_name')->nullable();
-            $table->string('document_type', 20);
-            $table->string('document_number')->unique();
-            $table->string('phone', 30)->nullable();
-            $table->string('email')->nullable();
-            $table->string('address')->nullable();
-            $table->string('city')->nullable();
-            $table->string('state')->nullable();
-            $table->string('country')->nullable();
-            $table->timestamps();
+        DB::collection('identifications')->insert([
+            [
+                '_id' => 'id_1',
+                'first_name' => 'Juan',
+                'last_name' => 'Perez',
+                'document_type' => 'DNI',
+                'document_number' => '12345678',
+                'phone' => '555-1234',
+                'email' => 'juan@example.com',
+                'address' => 'Calle Falsa 123',
+                'city' => 'Ciudad',
+                'state' => 'Provincia',
+                'country' => 'Pais',
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
+            ],
+            // Puedes añadir más documentos aquí
+        ]);
+
+        // Índice único en document_number
+        DB::collection('identifications')->raw(function ($collection) {
+            $collection->createIndex(['document_number' => 1], ['unique' => true, 'sparse' => true]);
         });
     }
-
-    public function down(): void
-    {
-        Schema::dropIfExists('identifications');
-    }
-};
+}

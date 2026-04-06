@@ -1,32 +1,23 @@
 <?php
 
-use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
-return new class extends Migration
+class PromotionProductMongoSeeder extends Seeder
 {
-    public function up(): void
+    public function run(): void
     {
-        Schema::create('promotion_product', function (Blueprint $table) {
-            $table->id();
+        // Agregar IDs de promociones al documento del producto
+        DB::collection('products')->where('_id', 'product_1')->update([
+            'promotion_ids' => ['promo_1', 'promo_2'], // array de IDs de promociones
+            'updated_at' => Carbon::now(),
+        ]);
 
-            $table->foreignId('promotion_id')
-                ->constrained('promotions')
-                ->cascadeOnDelete();
-
-            $table->foreignId('product_id')
-                ->constrained('products')
-                ->cascadeOnDelete();
-
-            $table->timestamps();
-
-            $table->unique(['promotion_id', 'product_id']);
-        });
+        // Alternativamente, agregar IDs de productos al documento de promoción
+        DB::collection('promotions')->where('_id', 'promo_1')->update([
+            'product_ids' => ['product_1', 'product_2'], // array de IDs de productos
+            'updated_at' => Carbon::now(),
+        ]);
     }
-
-    public function down(): void
-    {
-        Schema::dropIfExists('promotion_product');
-    }
-};
+}

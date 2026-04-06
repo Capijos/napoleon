@@ -1,40 +1,40 @@
 <?php
 
-use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
+namespace Database\Seeders;
 
-return new class extends Migration
+use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
+
+class PromotionsMongoSeeder extends Seeder
 {
-    public function up(): void
+    public function run(): void
     {
-        Schema::create('promotions', function (Blueprint $table) {
-            $table->id();
+        DB::collection('promotions')->insert([
+            [
+                '_id' => 'promo_1',
+                'name' => 'Summer Sale',
+                'slug' => 'summer-sale',
+                'description' => 'Discount for summer products',
+                'type' => 'percentage', // 'percentage' o 'fixed'
+                'value' => 15.0,
+                'coupon_code' => 'SUMMER15',
+                'minimum_amount' => 100.0,
+                'usage_limit' => 100,
+                'used_count' => 0,
+                'starts_at' => Carbon::now(),
+                'ends_at' => Carbon::now()->addMonth(),
+                'is_active' => true,
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
+            ],
+            // Puedes agregar más promociones aquí
+        ]);
 
-            $table->string('name');
-            $table->string('slug')->unique();
-            $table->text('description')->nullable();
-
-            $table->enum('type', ['percentage', 'fixed']);
-            $table->decimal('value', 12, 2);
-
-            $table->string('coupon_code')->nullable()->unique();
-            $table->decimal('minimum_amount', 12, 2)->nullable();
-
-            $table->unsignedInteger('usage_limit')->nullable();
-            $table->unsignedInteger('used_count')->default(0);
-
-            $table->timestamp('starts_at')->nullable();
-            $table->timestamp('ends_at')->nullable();
-
-            $table->boolean('is_active')->default(true);
-
-            $table->timestamps();
+        // Índices únicos en slug y coupon_code
+        DB::collection('promotions')->raw(function ($collection) {
+            $collection->createIndex(['slug' => 1], ['unique' => true]);
+            $collection->createIndex(['coupon_code' => 1], ['unique' => true, 'sparse' => true]);
         });
     }
-
-    public function down(): void
-    {
-        Schema::dropIfExists('promotions');
-    }
-};
+}

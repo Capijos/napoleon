@@ -1,57 +1,49 @@
 <?php
 
-use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
+namespace Database\Seeders;
 
-return new class extends Migration
+use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
+
+class ProductsMongoSeeder extends Seeder
 {
-    public function up(): void
+    public function run(): void
     {
-        Schema::create('products', function (Blueprint $table) {
-            $table->id();
+        DB::collection('products')->insert([
+            [
+                '_id' => 'prod_1',
+                'category_id' => 'cat_2', // referencia a la categoría
+                'shopify_id' => 123456789,
+                'shopify_handle' => 'iphone-14',
+                'shopify_url' => 'https://example.com/iphone-14',
+                'name' => 'iPhone 14',
+                'slug' => 'iphone-14',
+                'description' => 'Latest Apple iPhone 14',
+                'short_description' => 'Apple iPhone 14 Smartphone',
+                'brand' => 'Apple',
+                'material' => null,
+                'color' => 'Black',
+                'weight' => 0.5,
+                'length' => 15.0,
+                'thickness' => 0.8,
+                'main_image' => 'https://example.com/images/iphone14.jpg',
+                'status' => 'active',
+                'is_featured' => true,
+                'meta_title' => 'iPhone 14 - Apple',
+                'meta_description' => 'Buy the latest iPhone 14',
+                'badge_labels' => ['new', 'bestseller'],
+                'status_badges' => ['active'],
+                'raw_product' => ['shopify' => ['variant_count' => 3]],
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
+            ],
+            // Puedes agregar más productos aquí
+        ]);
 
-            $table->foreignId('category_id')
-                ->nullable()
-                ->constrained('categories')
-                ->nullOnDelete();
-
-            $table->unsignedBigInteger('shopify_id')->nullable()->unique();
-            $table->string('shopify_handle')->nullable()->index();
-            $table->string('shopify_url')->nullable();
-
-            $table->string('name');
-            $table->string('slug')->unique();
-
-            $table->text('description')->nullable();
-            $table->text('short_description')->nullable();
-
-            $table->string('brand')->nullable();
-            $table->string('material')->nullable();
-            $table->string('color')->nullable();
-
-            $table->decimal('weight', 10, 2)->nullable();
-            $table->decimal('length', 10, 2)->nullable();
-            $table->decimal('thickness', 10, 2)->nullable();
-
-            $table->string('main_image')->nullable();
-
-            $table->enum('status', ['draft', 'active', 'inactive'])->default('active');
-            $table->boolean('is_featured')->default(false);
-
-            $table->string('meta_title')->nullable();
-            $table->string('meta_description')->nullable();
-
-            $table->json('badge_labels')->nullable();
-            $table->json('status_badges')->nullable();
-            $table->json('raw_product')->nullable();
-
-            $table->timestamps();
+        // Crear índice único en slug si lo deseas
+        DB::collection('products')->raw(function ($collection) {
+            $collection->createIndex(['slug' => 1], ['unique' => true]);
         });
     }
-
-    public function down(): void
-    {
-        Schema::dropIfExists('products');
-    }
-};
+}

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Category;
 use App\Models\Product;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class CategoryController extends Controller
 {
@@ -16,63 +17,134 @@ class CategoryController extends Controller
 
         $sortBy = $request->get('sort_by', 'created-descending');
 
-        $query = Product::with('variants')
-            ->where('category_id', $category->id)
-            ->where('status', 'active');
+        /*
+        |--------------------------------------------------------------------------
+        | IMPORTANTE
+        |--------------------------------------------------------------------------
+        | Tu base tiene dos formatos:
+        |
+        | 1. Nuevo/correcto:
+        |    category_slugs: ['aretes']
+        |
+        | 2. Viejo/roto:
+        |    category_slugs: '["aretes"]'
+        |
+        | Este controller soporta ambos temporalmente para que funcione ya.
+        |--------------------------------------------------------------------------
+        */
+        $products = Product::where('status', 'active')
+            ->where(function ($query) use ($category) {
+                $query->where('category_slugs', $category->slug)
+                      ->orWhere('category_slugs', json_encode([$category->slug]));
+            })
+            ->get()
+            ->map(function ($product) {
+                return $this->normalizeProduct($product);
+            });
 
-        switch ($sortBy) {
-            case 'manual':
-                $query->orderBy('id', 'asc');
-                break;
+        $products = $products->sort(function ($a, $b) use ($sortBy) {
+            $priceA = collect($a->variants ?? [])->min('price') ?? 0;
+            $priceB = collect($b->variants ?? [])->min('price') ?? 0;
 
-            case 'best-selling':
-                // cambia esto si tienes una columna real como sales_count o sold_count
-                $query->orderBy('id', 'desc');
-                break;
+            switch ($sortBy) {
+                case 'title-ascending':
+                    return strcmp((string) ($a->name ?? ''), (string) ($b->name ?? ''));
 
-            case 'title-ascending':
-                $query->orderBy('name', 'asc');
-                break;
+                case 'title-descending':
+                    return strcmp((string) ($b->name ?? ''), (string) ($a->name ?? ''));
 
-            case 'title-descending':
-                $query->orderBy('name', 'desc');
-                break;
+                case 'price-ascending':
+                    return $priceA <=> $priceB;
 
-            case 'price-ascending':
-                $query->leftJoin('product_variants', 'products.id', '=', 'product_variants.product_id')
-                    ->select('products.*')
-                    ->orderBy('product_variants.price', 'asc');
-                break;
+                case 'price-descending':
+                    return $priceB <=> $priceA;
 
-            case 'price-descending':
-                $query->leftJoin('product_variants', 'products.id', '=', 'product_variants.product_id')
-                    ->select('products.*')
-                    ->orderBy('product_variants.price', 'desc');
-                break;
+                case 'created-ascending':
+                    return strtotime((string) ($a->created_at ?? '')) <=> strtotime((string) ($b->created_at ?? ''));
 
-            case 'created-ascending':
-                $query->orderBy('created_at', 'asc');
-                break;
+                case 'created-descending':
+                default:
+                    return strtotime((string) ($b->created_at ?? '')) <=> strtotime((string) ($a->created_at ?? ''));
+            }
+        })->values();
 
-            case 'created-descending':
-            default:
-                $query->orderBy('created_at', 'desc');
-                break;
-        }
+        $perPage = 50;
+        $page = max((int) $request->get('page', 1), 1);
 
-        $products = $query->paginate(50)->appends([
-            'sort_by' => $sortBy,
-        ]);
+        $paginated = new LengthAwarePaginator(
+            $products->forPage($page, $perPage)->values(),
+            $products->count(),
+            $perPage,
+            $page,
+            [
+                'path' => $request->url(),
+                'query' => $request->query(),
+            ]
+        );
 
         if ($request->ajax()) {
             return response()->json([
-                'html' => view('category.partials.products', compact('products'))->render(),
-                'next_page_url' => $products->nextPageUrl(),
-                'has_more' => $products->hasMorePages(),
-                'products' => $products->items(),
+                'html' => view('category.partials.products', [
+                    'products' => $paginated,
+                ])->render(),
+                'next_page_url' => $paginated->nextPageUrl(),
+                'has_more' => $paginated->hasMorePages(),
+                'products' => $paginated->items(),
             ]);
         }
 
-        return view('category.show', compact('category', 'products', 'sortBy'));
+        return view('category.show', [
+            'category' => $category,
+            'products' => $paginated,
+            'sortBy' => $sortBy,
+        ]);
+    }
+
+    /**
+     * Normaliza campos que a veces vienen como string JSON.
+     */
+    private function normalizeProduct(Product $product): Product
+    {
+        $jsonFields = [
+            'category_ids',
+            'category_slugs',
+            'category_names',
+            'promotion_ids',
+            'variants',
+            'images',
+            'badge_labels',
+            'status_badges',
+            'raw_product',
+        ];
+
+        foreach ($jsonFields as $field) {
+            $value = $product->{$field} ?? null;
+
+            if (is_string($value)) {
+                $decoded = json_decode($value, true);
+
+                if (json_last_error() === JSON_ERROR_NONE) {
+                    $product->{$field} = $decoded;
+                }
+            }
+        }
+
+        if (!is_array($product->variants ?? null)) {
+            $product->variants = [];
+        }
+
+        if (!is_array($product->images ?? null)) {
+            $product->images = [];
+        }
+
+        if (!is_array($product->badge_labels ?? null)) {
+            $product->badge_labels = [];
+        }
+
+        if (!is_array($product->status_badges ?? null)) {
+            $product->status_badges = [];
+        }
+
+        return $product;
     }
 }

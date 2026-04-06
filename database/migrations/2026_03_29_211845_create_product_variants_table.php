@@ -1,49 +1,19 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('product_variants', function (Blueprint $table) {
-            $table->id();
-
-            $table->foreignId('product_id')
-                ->constrained('products')
-                ->cascadeOnDelete();
-
-            $table->unsignedBigInteger('shopify_variant_id')->nullable()->unique();
-
-            $table->string('title')->nullable();
-            $table->string('sku')->nullable()->index();
-
-            $table->decimal('price', 12, 2)->default(0);
-            $table->decimal('compare_price', 12, 2)->nullable();
-
-            $table->integer('stock')->default(0);
-            $table->boolean('available')->default(true);
-
-            $table->string('option1')->nullable();
-            $table->string('option2')->nullable();
-            $table->string('option3')->nullable();
-
-            $table->boolean('requires_shipping')->default(true);
-            $table->boolean('taxable')->default(false);
-
-            $table->string('inventory_management')->nullable();
-            $table->string('barcode')->nullable();
-
-            $table->json('options')->nullable();
-
-            $table->timestamps();
-        });
+        // Crea la colección 'product_variants' en MongoDB
+        DB::collection('product_variants')->insert([]);
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('product_variants');
+        // Elimina la colección
+        DB::collection('product_variants')->drop();
     }
 };
