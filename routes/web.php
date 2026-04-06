@@ -20,3 +20,7 @@ Route::get('/search', [SearchController::class, 'index'])
 
 Route::get('/search/modal', [SearchController::class, 'modal'])
     ->name('search.modal');
+
+Route::get('/login', function () {
+    return view('home');
+})->name('login');

@@ -37,7 +37,7 @@
                   --text-color-active: #ffffff;
                 ">
                 <li class="item is-active" data-load-page="joyas-religiosas" role="menuitem">
-                  <a class="link" style="" href="https://napoleonejoyas.co/pages/joyas-religiosas">
+                  <a class="link" style="" href="#">
                     Religiosas
                   </a>
                 </li>
@@ -49,7 +49,7 @@
                 --logo-font-weight: 900;
               ">
               <h1 class="header__heading">
-                <a href="https://napoleonejoyas.co/" class="header__heading-link focus-inset"><img srcset="
+                <a href="{{ url('/') }}" class="header__heading-link focus-inset"><img srcset="
                       //napoleonejoyas.co/cdn/shop/files/Logo-PNG-sticky-retina_79b04eeb-d7e2-404f-99a0-8123ab409483_190x.png?v=1675090862    1x,
                       //napoleonejoyas.co/cdn/shop/files/Logo-PNG-sticky-retina_79b04eeb-d7e2-404f-99a0-8123ab409483_190x@2x.png?v=1675090862 2x
                     " src="./index_files/Logo-PNG-sticky-retina_79b04eeb-d7e2-404f-99a0-8123ab409483_190x.png"
@@ -102,7 +102,7 @@
                   </details>
                 </predictive-search></details-modal>
               <div class="header__iconItem header__group">
-                <a href="https://napoleonejoyas.co/account/login"
+                <a href="{{ route('login') }}"
                   class="header__icon header__icon--account link focus-inset" data-open-auth-sidebar=""><svg
                     xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" aria-hidden="true" focusable="false"
                     role="presentation" class="icon icon-account">
@@ -448,7 +448,7 @@
                   --logo-font-size: 15px;
                   --logo-font-weight: 900;
                 ">
-                <a href="https://napoleonejoyas.co/" class="header__heading-link focus-inset"><img srcset="
+                <a href="{{ url('/') }}" class="header__heading-link focus-inset"><img srcset="
                       //napoleonejoyas.co/cdn/shop/files/Logo-PNG-sticky-retina_79b04eeb-d7e2-404f-99a0-8123ab409483_150x.png?v=1675090862    1x,
                       //napoleonejoyas.co/cdn/shop/files/Logo-PNG-sticky-retina_79b04eeb-d7e2-404f-99a0-8123ab409483_150x@2x.png?v=1675090862 2x
                     " src="./index_files/Logo-PNG-sticky-retina_79b04eeb-d7e2-404f-99a0-8123ab409483_150x.png"
@@ -458,7 +458,7 @@
           </div>
           <div class="header-mobile__item--customer">
             <div class="header-mobile--icon" style="--icon-color: #ffffff">
-              <a href="https://napoleonejoyas.co/account/login"
+              <a href="{{ route('login') }}"
                 class="header__icon header__icon--account link focus-inset" data-open-auth-sidebar="" role="button">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 50" aria-hidden="true" focusable="false"
                   role="presentation" class="icon icon-account">
