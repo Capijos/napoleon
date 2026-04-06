@@ -7,7 +7,7 @@
     <title>@yield('title', 'Mi Proyecto')</title>
 
     {{-- CSS y JS globales --}}
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @vite(['resources/css/app.css'])
 
     {{-- CSS extra por página --}}
     @stack('styles')
