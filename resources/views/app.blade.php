@@ -15,6 +15,10 @@
 
 <body>
     @include('components.header')
+    @include('partials.submenu')
+    @include('partials.subsearch')
+    @include('partials.subaccount')
+
     <main>
         @yield('content')
     </main>

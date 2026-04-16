@@ -102,7 +102,7 @@
                   </details>
                 </predictive-search></details-modal>
               <div class="header__iconItem header__group">
-                <a href="{{ route('login') }}"
+                <a href="javascript:void(0)"
                   class="header__icon header__icon--account link focus-inset" data-open-auth-sidebar=""><svg
                     xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" aria-hidden="true" focusable="false"
                     role="presentation" class="icon icon-account">
@@ -458,7 +458,7 @@
           </div>
           <div class="header-mobile__item--customer">
             <div class="header-mobile--icon" style="--icon-color: #ffffff">
-              <a href="{{ route('login') }}"
+              <a href="javascript:void(0)"
                 class="header__icon header__icon--account link focus-inset" data-open-auth-sidebar="" role="button">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 50" aria-hidden="true" focusable="false"
                   role="presentation" class="icon icon-account">
@@ -496,3 +496,303 @@
     </header>
   </sticky-header-mobile>
 </div>
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const menu = document.getElementById('navigation-mobile');
+    const openButtons = document.querySelectorAll('[data-mobile-menu]');
+    const closeButtons = document.querySelectorAll('[data-menu-close-sidebar]');
+
+    if (!menu) return;
+
+    let backdrop = document.querySelector('.mobile-menu-backdrop');
+
+    if (!backdrop) {
+        backdrop = document.createElement('div');
+        backdrop.className = 'mobile-menu-backdrop';
+        document.body.appendChild(backdrop);
+    }
+
+    function openMenu() {
+        menu.classList.add('is-open');
+        backdrop.classList.add('is-open');
+        document.body.classList.add('mobile-menu-open');
+    }
+
+    function closeMenu() {
+        menu.classList.remove('is-open');
+        backdrop.classList.remove('is-open');
+        document.body.classList.remove('mobile-menu-open');
+    }
+
+    openButtons.forEach((button) => {
+        button.addEventListener('click', function (e) {
+            e.preventDefault();
+            openMenu();
+        });
+    });
+
+    closeButtons.forEach((button) => {
+        button.addEventListener('click', function (e) {
+            e.preventDefault();
+            closeMenu();
+        });
+    });
+
+    backdrop.addEventListener('click', closeMenu);
+
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') {
+            closeMenu();
+        }
+    });
+});
+</script>
+
+<style>
+  #navigation-mobile {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: min(92vw, 380px);
+    height: 100vh;
+    z-index: 9999;
+    background: #fff;
+    transform: translateX(-100%);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: transform .3s ease, opacity .3s ease, visibility .3s ease;
+}
+
+#navigation-mobile.is-open {
+    transform: translateX(0);
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+
+.mobile-menu-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, .45);
+    z-index: 9998;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity .3s ease, visibility .3s ease;
+}
+
+.mobile-menu-backdrop.is-open {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+
+body.mobile-menu-open {
+    overflow: hidden;
+}
+
+.mobileMenu-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: 0;
+    cursor: pointer;
+    padding: 8px;
+}
+
+
+</style>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const searchDrawer = document.getElementById('search-form-mobile');
+    const openButtons = document.querySelectorAll('[data-search-mobile]');
+    const closeButtons = document.querySelectorAll(
+        '[data-search-close-sidebar], [data-close-search-popup]'
+    );
+
+    if (!searchDrawer) return;
+
+    let backdrop = document.querySelector('.mobile-search-backdrop');
+
+    if (!backdrop) {
+        backdrop = document.createElement('div');
+        backdrop.className = 'mobile-search-backdrop';
+        document.body.appendChild(backdrop);
+    }
+
+    function openSearch() {
+        searchDrawer.classList.add('is-open');
+        backdrop.classList.add('is-open');
+        document.body.classList.add('mobile-search-open');
+
+        const input = searchDrawer.querySelector('#Search-In-Modal-Mobile');
+        if (input) {
+            setTimeout(() => input.focus(), 180);
+        }
+    }
+
+    function closeSearch() {
+        searchDrawer.classList.remove('is-open');
+        backdrop.classList.remove('is-open');
+        document.body.classList.remove('mobile-search-open');
+    }
+
+    openButtons.forEach((button) => {
+        button.addEventListener('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            openSearch();
+        });
+    });
+
+    closeButtons.forEach((button) => {
+        button.addEventListener('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            closeSearch();
+        });
+    });
+
+    backdrop.addEventListener('click', closeSearch);
+
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') {
+            closeSearch();
+        }
+    });
+});
+</script>
+<style>
+#search-form-mobile {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: min(92vw, 420px);
+    height: 100vh;
+    z-index: 10001;
+    background: #fff;
+    transform: translateX(-100%);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: transform .3s ease, opacity .3s ease, visibility .3s ease;
+}
+
+#search-form-mobile.is-open {
+    transform: translateX(0);
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+
+.mobile-search-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, .45);
+    z-index: 10000;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity .3s ease, visibility .3s ease;
+}
+
+.mobile-search-backdrop.is-open {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+
+body.mobile-search-open {
+    overflow: hidden;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const authSidebar = document.querySelector('[data-auth-sidebar]');
+    const openButtons = document.querySelectorAll('[data-open-auth-sidebar]');
+    const closeButtons = document.querySelectorAll('[data-close-auth-sidebar]');
+
+    if (!authSidebar) return;
+
+    let overlay = document.querySelector('.background-overlay');
+
+    if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.className = 'background-overlay';
+        document.body.appendChild(overlay);
+    }
+
+    function openAuthSidebar() {
+        document.body.classList.add('auth-sidebar-show');
+
+        const firstInput = authSidebar.querySelector('input[type="email"], input[type="text"]');
+        if (firstInput) {
+            setTimeout(() => firstInput.focus(), 150);
+        }
+    }
+
+    function closeAuthSidebar() {
+        document.body.classList.remove('auth-sidebar-show');
+    }
+
+    openButtons.forEach((button) => {
+        button.addEventListener('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            openAuthSidebar();
+        });
+    });
+
+    closeButtons.forEach((button) => {
+        button.addEventListener('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            closeAuthSidebar();
+        });
+    });
+
+    overlay.addEventListener('click', closeAuthSidebar);
+
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') {
+            closeAuthSidebar();
+        }
+    });
+});
+</script>
+
+<style>
+.halo-auth-sidebar {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: min(92vw, 420px);
+    height: 100vh;
+    background: #fff;
+    z-index: 10003;
+    transform: translateX(100%);
+    transition: transform .3s ease;
+    overflow-y: auto;
+}
+
+.background-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, .45);
+    z-index: 10002;
+}
+
+body.auth-sidebar-show .halo-auth-sidebar {
+    transform: translateX(0) !important;
+}
+
+body.auth-sidebar-show .background-overlay {
+    display: block;
+}
+</style>
