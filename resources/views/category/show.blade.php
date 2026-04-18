@@ -171,6 +171,10 @@
 
                 $variant = collect($variants)->first();
                 $price = $variant['price'] ?? null;
+                $defaultVariant = $product->default_variant;
+                $cartVariantId = $defaultVariant['variant_id'] ?? null;
+                $cartProductId = (string) $product->id;
+                $isAvailable = (bool) $product->is_available;
 
                 $formattedPrice = $price !== null
                     ? '$' . number_format((float) $price, 0, ',', '.')
@@ -181,7 +185,7 @@
 
             <li class="product">
                 <div class="product-item"
-                    data-product-id="{{ $product->shopify_id ?? $product->id }}">
+                    data-product-id="{{ $cartProductId }}">
                     <div class="card style-6">
                         <div class="card-product">
                             <div class="card-product__wrapper">
@@ -346,25 +350,37 @@
                                 @endif
                             </div>
 
-                            <div class="card-action__group card-list__hidden">
-                                <div class="card-action">
-                                    <form action="javascript:void(0)" method="post"
-                                        class="variants">
-                                        <a class="button button-style button-ATC"
-                                            href="{{ $productUrl }}" role="button">
-                                            Agregar al Carrito
-                                        </a>
+                                <div class="card-action__group card-list__hidden">
+                                    <div class="card-action">
+                                        <form action="javascript:void(0)" method="post"
+                                            class="variants">
+                                            <button
+                                                type="button"
+                                                class="button button-style button-ATC"
+                                                data-cart-add="true"
+                                                data-product-id="{{ $cartProductId }}"
+                                                data-variant-id="{{ $cartVariantId }}"
+                                                {{ $isAvailable ? '' : 'disabled' }}
+                                            >
+                                                {{ $isAvailable ? 'Agregar al Carrito' : 'Agotado' }}
+                                            </button>
                                     </form>
+                                    </div>
                                 </div>
-                            </div>
 
                             <div class="card-action card-grid__hidden">
                                 <form action="javascript:void(0)" method="post"
                                     class="variants">
-                                    <a class="button button-ATC" href="{{ $productUrl }}"
-                                        role="button">
-                                        Agregar al Carrito
-                                    </a>
+                                    <button
+                                        type="button"
+                                        class="button button-ATC"
+                                        data-cart-add="true"
+                                        data-product-id="{{ $cartProductId }}"
+                                        data-variant-id="{{ $cartVariantId }}"
+                                        {{ $isAvailable ? '' : 'disabled' }}
+                                    >
+                                        {{ $isAvailable ? 'Agregar al Carrito' : 'Agotado' }}
+                                    </button>
                                 </form>
                                 <div class="variants-popup custom-scrollbar">
                                     <template></template>

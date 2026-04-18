@@ -3,7 +3,7 @@
 @section('content')
 @php
     $productHandle = $product->shopify_handle ?? $product->slug;
-    $productId = $product->shopify_id ?? $product->id;
+    $productId = (string) $product->id;
     $variantId = $defaultVariant['variant_id'] ?? '';
     $sku = $defaultVariant['sku'] ?? null;
     $inventoryQty = $availableVariants->count();
@@ -516,7 +516,6 @@
                                     >
                                         <form
                                             method="post"
-                                            action="javascript:void(0)"
                                             id="product-form-template--17315347726451__main-{{ $productId }}"
                                             accept-charset="UTF-8"
                                             class="form"
@@ -567,15 +566,18 @@
                                                         <input type="hidden" name="section-id" value="template--17315347726451__main">
 
                                                         <div class="product-form__buttons">
-                                                            <button
-                                                                type="submit"
-                                                                name="add"
-                                                                data-btn-addtocart=""
-                                                                class="product-form__submit button-height button button-style button-shake-affect"
-                                                                id="product-add-to-cart"
-                                                                {{ !$product->is_available ? 'disabled' : '' }}
-                                                            >
-                                                                {{ $product->is_available ? 'Agregar al Carrito' : 'Agotado' }}
+                                                             <button
+                                                                 type="button"
+                                                                 name="add"
+                                                                 data-cart-add="true"
+                                                                 class="product-form__submit button-height button button-style button-shake-affect"
+                                                                 id="product-add-to-cart"
+                                                                 data-product-id="{{ $productId }}"
+                                                                 data-variant-id="{{ $variantId }}"
+                                                                 data-quantity-target="#quantity-template--17315347726451__main-{{ $productId }}"
+                                                                 {{ !$product->is_available ? 'disabled' : '' }}
+                                                             >
+                                                                 {{ $product->is_available ? 'Agregar al Carrito' : 'Agotado' }}
                                                             </button>
                                                         </div>
                                                     </div>
@@ -613,11 +615,56 @@
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>
+</div>
         </div>
-@endsection
+    </div>
+</main>
 
+<style>
+.product-form__submit {
+    position: relative;
+}
+
+.product-form__submit.loading {
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+.product-form__submit.loading::after {
+    content: '';
+    position: absolute;
+    right: 12px;
+    width: 16px;
+    height: 16px;
+    border: 2px solid #fff;
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.product-view-message {
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.product-view-message.success {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.product-view-message.error {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+</style>
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {

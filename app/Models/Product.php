@@ -124,5 +124,51 @@ protected $casts = [
     {
         return collect($this->variants)->contains('available', true);
     }
-}
 
+    public function resolveVariant(?string $variantId = null): ?array
+    {
+        $variants = collect($this->variants ?? [])->filter(fn ($variant) => is_array($variant));
+
+        if ($variantId !== null && $variantId !== '') {
+            $variant = $variants->first(function ($candidate) use ($variantId) {
+                return (string) ($candidate['variant_id'] ?? '') === (string) $variantId;
+            });
+
+            if ($variant) {
+                return $variant;
+            }
+
+            return null;
+        }
+
+        return $variants->first(fn ($variant) => ($variant['available'] ?? false) === true)
+            ?? $variants->first();
+    }
+
+    public function toCartItemData(?string $variantId = null): array
+    {
+        $variant = $this->resolveVariant($variantId);
+        $resolvedVariantId = $variant['variant_id'] ?? null;
+        $variantName = $variant['title'] ?? null;
+        $unitPrice = (float) ($variant['price'] ?? $this->min_price ?? 0);
+        $image = $this->main_image;
+
+        if (!$image && is_array($this->images) && !empty($this->images[0]['src'])) {
+            $image = $this->images[0]['src'];
+        }
+
+        if ($variantName === 'Default Title') {
+            $variantName = null;
+        }
+
+        return [
+            'product_id' => (string) $this->getKey(),
+            'variant_id' => $resolvedVariantId !== null && $resolvedVariantId !== '' ? (string) $resolvedVariantId : null,
+            'name' => (string) $this->name,
+            'image' => $image ?: null,
+            'sku' => $variant['sku'] ?? null,
+            'variant_name' => $variantName,
+            'unit_price' => round($unitPrice, 2),
+        ];
+    }
+}

@@ -123,8 +123,9 @@
                   <div class="wishlist-count-bubble">
                     <span class="text" aria-hidden="true" data-wishlist-count="">0</span>
                   </div>
-                </a><a data-cart-sidebar="" href="javascript:void(0)"
-                  class="header__icon header__icon--cart link focus-inset" id="cart-icon-bubble" role="button"><svg
+                </a><a href="javascript:void(0)"
+                  class="header__icon header__icon--cart link focus-inset" id="cart-icon-bubble" role="button"
+                  onclick="openMiniCart()"><svg
                     xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="icon icon-cart" aria-hidden="true"
                     focusable="false" role="presentation">
                     <path
@@ -133,8 +134,8 @@
                   </svg>
                   <span class="visually-hidden">Carrito</span>
                   <div class="cart-count-bubble">
-                    <span class="text" aria-hidden="true" data-cart-count="">1</span><span class="visually-hidden">1
-                      artículo</span>
+                    <span class="text" aria-hidden="true" data-cart-count="header">0</span><span class="visually-hidden">0
+                      artículos</span>
                   </div>
                 </a>
               </div>
@@ -470,24 +471,28 @@
               </a>
             </div>
           </div>
-          <div class="header-mobile__item--cart">
+<div class="header-mobile__item--cart">
             <div class="header-mobile--icon" style="
                 --icon-color: #ffffff;
                 --cart-count-background: #bc1b3b;
                 --cart-count-color: #ffffff;
               ">
-              <a data-cart-sidebar="" href="javascript:void(0)" class="header__icon header__icon--cart link focus-inset"
-                id="cart-icon-bubble mobile" role="button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"
+              <a href="javascript:void(0)" onclick="openMiniCart(); return false;"
+                class="header__icon header__icon--cart link focus-inset"
+                id="cart-icon-bubble mobile" role="button" aria-label="Abrir carrito"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"
                   class="icon icon-cart" aria-hidden="true" focusable="false" role="presentation">
                   <path
-                    d="M551.991 64H129.28l-8.329-44.423C118.822 8.226 108.911 0 97.362 0H12C5.373 0 0 5.373 0 12v8c0 6.627 5.373 12 12 12h78.72l69.927 372.946C150.305 416.314 144 431.42 144 448c0 35.346 28.654 64 64 64s64-28.654 64-64a63.681 63.681 0 0 0-8.583-32h145.167a63.681 63.681 0 0 0-8.583 32c0 35.346 28.654 64 64 64 35.346 0 64-28.654 64-64 0-17.993-7.435-34.24-19.388-45.868C506.022 391.891 496.76 384 485.328 384H189.28l-12-64h331.381c11.368 0 21.177-7.976 23.496-19.105l43.331-208C578.592 77.991 567.215 64 551.991 64zM240 448c0 17.645-14.355 32-32 32s-32-14.355-32-32 14.355-32 32-32 32 14.355 32 32zm224 32c-17.645 0-32-14.355-32-32s14.355-32 32-32 32 14.355 32 32-14.355 32-32 32zm38.156-192H171.28l-36-192h406.876l-40 192z">
+                    d="M551.991 64H129.28l-8.329-44.423C118.822 8.226 108.911 0 97.362 0H12C5.373 0 0 5.373 0 12v8c0 6.627 5.373 12 12 12h78.72l69.927 372.946C150.305 416.314 144 431.42 144 448c0 35.346 28.654 64 64 64s64-28.654 64-64a63.681 63.681 0 0 0-8.583-32h145.167a63.681 63.681 0 0 0-8.583 32c0 35.346 28.654 64 64 64 35.346 0 64-28.654 64-64 0-17.993-7.435-34.24-19.388-45.868C506.022 391.891 496.76 384 485.328 384H189.28l-12-64h331.381c11.368 0 21.177-7.976 23.496-19.105l43.331-208C578.592 77.991 567.215 64 551.991 64zM240 448c0 17.645-14.355 32-32 32s-32-14.355-32-32 14.355-32 32-32 32 14.355 32 32zm224 32c-17.645 0-32-14.355-32-32s14.355-32 32-32 32 14.355 32 32-14.355 32 32 32zm38.156-192H171.28l-36-192h406.876l-40 192z">
                   </path>
                 </svg>
                 <span class="visually-hidden">Carrito</span>
                 <div class="cart-count-bubble">
-                  <span class="text" aria-hidden="true" data-cart-count="">1</span><span class="visually-hidden">1
-                    artículo</span>
+                  <span class="text" aria-hidden="true" data-cart-count="mobile">0</span><span class="visually-hidden">0
+                    artículos</span>
                 </div>
+              </a>
+            </div>
+          </div>
               </a>
             </div>
           </div>
@@ -796,3 +801,11 @@ body.auth-sidebar-show .background-overlay {
     display: block;
 }
 </style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    if (typeof refreshCartCount === 'function') {
+        refreshCartCount();
+    }
+});
+</script>
