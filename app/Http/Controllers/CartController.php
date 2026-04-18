@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Cart;
 use App\Models\Product;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
+use Symfony\Component\HttpFoundation\Cookie as HttpCookie;
 use Illuminate\Support\Facades\Cookie;
 
 class CartController extends Controller
@@ -27,14 +29,28 @@ class CartController extends Controller
             return null;
         }
 
-        return Cart::active()
-            ->where('_id', $cartId)
-            ->first();
+        $cart = Cart::find($cartId);
+
+        if (!$cart || $cart->status !== Cart::STATUS_ACTIVE) {
+            return null;
+        }
+
+        return $cart;
     }
 
     protected function queueCartCookie(Request $request, Cart $cart): void
     {
-        Cookie::queue(Cookie::make(
+        Cookie::queue($this->makeCartCookie($request, $cart));
+    }
+
+    protected function queueCartForget(Request $request): void
+    {
+        Cookie::queue(Cookie::forget(self::CART_COOKIE));
+    }
+
+    protected function makeCartCookie(Request $request, Cart $cart): HttpCookie
+    {
+        return Cookie::make(
             self::CART_COOKIE,
             (string) $cart->getKey(),
             self::CART_COOKIE_MINUTES,
@@ -44,12 +60,16 @@ class CartController extends Controller
             true,
             false,
             'lax'
-        ));
+        );
     }
 
-    protected function queueCartForget(Request $request): void
+    protected function withCartCookie($response, Request $request, ?Cart $cart)
     {
-        Cookie::queue(Cookie::forget(self::CART_COOKIE));
+        if (!$cart) {
+            return $response;
+        }
+
+        return $response->withCookie($this->makeCartCookie($request, $cart));
     }
 
     protected function getOrCreateCart(Request $request): Cart
@@ -63,6 +83,7 @@ class CartController extends Controller
         }
 
         $cart = Cart::create([
+            'user_id' => 'guest_' . Str::uuid()->toString(),
             'status' => Cart::STATUS_ACTIVE,
             'items' => [],
             'subtotal' => 0,
@@ -167,22 +188,28 @@ class CartController extends Controller
         }
 
         $cart = $this->getOrCreateCart($request);
+        $cartItemData = $product->toCartItemData($variantId);
 
         $cart->addItem(array_merge(
-            $product->toCartItemData($variantId),
+            $cartItemData,
             ['quantity' => (int) ($payload['quantity'] ?? 1)]
         ));
         $cart->save();
 
         $summary = $this->summaryResponse($cart);
-        $addedItem = collect($summary['items'])
-            ->first(fn ($item) => $item['product_id'] === (string) $product->getKey() && $item['variant_id'] === ($variantId !== '' ? $variantId : null));
+        $addedItem = collect($cart->items ?? [])
+            ->map(fn ($item) => $this->mapCartItem((array) $item))
+            ->first(function ($item) use ($product, $cartItemData) {
+                return $item['product_id'] === (string) $product->getKey()
+                    && (string) ($item['variant_id'] ?? '') === (string) ($cartItemData['variant_id'] ?? '');
+            });
 
-        return response()->json([
+        return $this->withCartCookie(response()->json([
             'success' => true,
             'message' => 'Producto agregado al carrito.',
+            'cart_id' => (string) $cart->getKey(),
             'item' => $addedItem,
-        ] + $summary);
+        ] + $summary), $request, $cart);
     }
 
     public function update(Request $request)
@@ -210,10 +237,10 @@ class CartController extends Controller
 
         $cart->save();
 
-        return response()->json([
+        return $this->withCartCookie(response()->json([
             'success' => true,
             'message' => 'Carrito actualizado.',
-        ] + $this->summaryResponse($cart));
+        ] + $this->summaryResponse($cart)), $request, $cart);
     }
 
     public function remove(Request $request)
@@ -243,10 +270,10 @@ class CartController extends Controller
 
         $cart->save();
 
-        return response()->json([
+        return $this->withCartCookie(response()->json([
             'success' => true,
             'message' => 'Item eliminado del carrito.',
-        ] + $this->summaryResponse($cart));
+        ] + $this->summaryResponse($cart)), $request, $cart);
     }
 
     public function clear(Request $request)
@@ -258,33 +285,35 @@ class CartController extends Controller
             $cart->save();
         }
 
-        return response()->json([
+        return $this->withCartCookie(response()->json([
             'success' => true,
             'message' => 'Carrito vaciado.',
-        ] + $this->summaryResponse($cart));
+        ] + $this->summaryResponse($cart)), $request, $cart);
     }
 
     public function getCount(Request $request)
     {
-        return response()->json([
+        return $this->withCartCookie(response()->json([
             'count' => $this->buildCartData($this->loadCartFromRequest($request))['itemsCount'],
-        ]);
+        ]), $request, $this->loadCartFromRequest($request));
     }
 
     public function mini(Request $request)
     {
         $data = $this->buildCartData($this->loadCartFromRequest($request));
 
-        return view('components.mini-cart-content', [
+        return $this->withCartCookie(response()->view('components.mini-cart-content', [
             'items' => $data['items'],
             'subtotal' => $data['subtotal'],
             'itemsCount' => $data['itemsCount'],
-        ]);
+        ]), $request, $data['cart']);
     }
 
     public function summary(Request $request)
     {
-        return response()->json($this->summaryResponse($this->loadCartFromRequest($request)));
+        $cart = $this->loadCartFromRequest($request);
+
+        return $this->withCartCookie(response()->json($this->summaryResponse($cart)), $request, $cart);
     }
 
     public function checkout(Request $request)

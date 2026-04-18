@@ -165,6 +165,12 @@
     </style>
 
     <script>
+    window.napoleonBasePath = '{{ rtrim(request()->getBaseUrl(), '/') }}';
+    window.napoleonUrl = function(path) {
+        var basePath = window.napoleonBasePath || '';
+        return basePath + path;
+    };
+
     window.closeCartAddedPopup = function() {
         var popup = document.getElementById('cart-added-popup');
         if (popup) {
@@ -227,7 +233,7 @@
             var quantity = options.quantity || 1;
             var buttonEl = options.buttonEl;
 
-            fetch('/api/cart/add', {
+            fetch(window.napoleonUrl('/api/cart/add'), {
                 method: 'POST',
                 credentials: 'same-origin',
                 headers: {

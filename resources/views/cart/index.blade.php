@@ -5,10 +5,7 @@
 @section('content')
 @php
 $isEmpty = empty($items) || count($items) === 0;
-
-function formatPrice($price) {
-    return '$' . number_format((float) $price, 0, ',', '.');
-}
+$formatPrice = fn ($price) => '$' . number_format((float) $price, 0, ',', '.');
 @endphp
 
 <main id="MainContent" class="content-for-layout focus-none" role="main" tabindex="-1">
@@ -39,7 +36,7 @@ function formatPrice($price) {
                     <span>Tu Carrito</span>
                 </nav>
 
-                <form id="cart" class="cart__contents" action="/api/cart/update" method="POST">
+                <form id="cart" class="cart__contents" action="{{ rtrim(request()->getBaseUrl(), '/') }}/api/cart/update" method="POST">
                     @csrf
                     <div class="cart__items" id="main-cart-items">
                         <div class="cart__items-wrapper">
@@ -94,7 +91,7 @@ function formatPrice($price) {
 
                             <div class="cart-item__price">
                                 <span class="price-item price-item--regular">
-                                    {{ formatPrice($item['unit_price']) }}
+                                    {{ $formatPrice($item['unit_price']) }}
                                 </span>
                             </div>
 
@@ -127,7 +124,7 @@ function formatPrice($price) {
 
                             <div class="cart-item__total">
                                 <span class="price-item price-item--regular">
-                                    {{ formatPrice($item['subtotal']) }}
+                                    {{ $formatPrice($item['subtotal']) }}
                                 </span>
                             </div>
 
@@ -170,11 +167,11 @@ function formatPrice($price) {
                                 <div class="cart-summary__block">
                                     <div class="cart-summary__row">
                                         <span>Subtotal</span>
-                                        <span class="price">{{ formatPrice($subtotal) }}</span>
+                                        <span class="price">{{ $formatPrice($subtotal) }}</span>
                                     </div>
                                     <div class="cart-summary__row cart-summary__row--total">
                                         <span>Total</span>
-                                        <span class="price">{{ formatPrice($subtotal) }}</span>
+                                        <span class="price">{{ $formatPrice($subtotal) }}</span>
                                     </div>
                                 </div>
                             </div>
@@ -672,7 +669,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function removeFromCart(itemId) {
-    fetch('/api/cart/remove', {
+    fetch(window.napoleonUrl('/api/cart/remove'), {
         method: 'POST',
         credentials: 'same-origin',
         headers: {
@@ -696,7 +693,7 @@ function removeFromCart(itemId) {
 }
 
 function updateQuantity(itemId, quantity) {
-    fetch('/api/cart/update', {
+    fetch(window.napoleonUrl('/api/cart/update'), {
         method: 'POST',
         credentials: 'same-origin',
         headers: {

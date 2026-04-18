@@ -343,7 +343,7 @@
     };
 
     window.refreshCartCount = function() {
-        return fetch('/api/cart/count', {
+        return fetch(window.napoleonUrl('/api/cart/count'), {
             credentials: 'same-origin',
             headers: { 'Accept': 'application/json' }
         })
@@ -355,7 +355,7 @@
     };
 
     window.reloadMiniCart = function() {
-        return fetch('/api/cart/mini', {
+        return fetch(window.napoleonUrl('/api/cart/mini'), {
             credentials: 'same-origin',
             headers: { 'Accept': 'text/html' }
         })
@@ -430,7 +430,7 @@
             buttonEl.disabled = true;
         }
 
-        fetchJson('/api/cart/update', {
+        fetchJson(window.napoleonUrl('/api/cart/update'), {
             method: 'POST',
             body: JSON.stringify({ item_id: itemId, quantity: quantity })
         })
@@ -458,7 +458,7 @@
             buttonEl.disabled = true;
         }
 
-        fetchJson('/api/cart/remove', {
+        fetchJson(window.napoleonUrl('/api/cart/remove'), {
             method: 'POST',
             body: JSON.stringify({ item_id: itemId })
         })

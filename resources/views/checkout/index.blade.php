@@ -4,9 +4,7 @@
 
 @section('content')
 @php
-function formatPrice($price) {
-    return '$' . number_format((float) $price, 0, ',', '.');
-}
+$formatPrice = fn ($price) => '$' . number_format((float) $price, 0, ',', '.');
 @endphp
 
 <main id="MainContent" class="content-for-layout focus-none" role="main" tabindex="-1">
@@ -232,7 +230,7 @@ function formatPrice($price) {
                                     @endif
                                 </div>
                                 <div class="checkout-item__price">
-                                    {{ formatPrice($item['subtotal']) }}
+                                    {{ $formatPrice($item['subtotal']) }}
                                 </div>
                             </div>
                             @endforeach
@@ -241,7 +239,7 @@ function formatPrice($price) {
                         <div class="checkout-totals">
                             <div class="checkout-total">
                                 <span>Subtotal</span>
-                                <span>{{ formatPrice($subtotal) }}</span>
+                                <span>{{ $formatPrice($subtotal) }}</span>
                             </div>
                             <div class="checkout-total">
                                 <span>Envío</span>
@@ -250,12 +248,12 @@ function formatPrice($price) {
                             @if($discount > 0)
                             <div class="checkout-total checkout-total--discount">
                                 <span>Descuento</span>
-                                <span>-{{ formatPrice($discount) }}</span>
+                                <span>-{{ $formatPrice($discount) }}</span>
                             </div>
                             @endif
                             <div class="checkout-total checkout-total--final">
                                 <span>Total</span>
-                                <span>{{ formatPrice($total > 0 ? $total : $subtotal) }}</span>
+                                <span>{{ $formatPrice($total > 0 ? $total : $subtotal) }}</span>
                             </div>
                         </div>
 

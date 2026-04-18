@@ -1,34 +1,33 @@
 <?php
 
-namespace Database\Seeders;
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
 
-use Illuminate\Database\Seeder;
-use App\Models\User;
-use Illuminate\Support\Facades\Hash;
-
-class UsersMongoSeeder extends Seeder
+return new class extends Migration
 {
-    public function run(): void
+    public function up(): void
     {
-        // Crear un usuario de ejemplo
-        User::create([
-            'first_name' => 'José',
-            'last_name' => 'Capilla',
-            'email' => 'capijose@example.com',
-            'email_verified_at' => now(),
-            'password' => Hash::make('password'),
-            'phone' => '+34123456789',
-            'document_type' => 'DNI',
-            'document_number' => '12345678',
-            'avatar' => null,
-            'is_admin' => true,
-            'is_active' => true,
-            'remember_token' => \Str::random(10),
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-
-        // Si quieres, puedes crear más usuarios con un factory
-        User::factory()->count(10)->create();
+        Schema::create('users', function (Blueprint $table) {
+            $table->id();
+            $table->string('first_name')->nullable();
+            $table->string('last_name')->nullable();
+            $table->string('email')->unique();
+            $table->timestamp('email_verified_at')->nullable();
+            $table->string('password');
+            $table->string('phone')->nullable();
+            $table->string('document_type')->nullable();
+            $table->string('document_number')->nullable();
+            $table->string('avatar')->nullable();
+            $table->boolean('is_admin')->default(false);
+            $table->boolean('is_active')->default(true);
+            $table->rememberToken();
+            $table->timestamps();
+        });
     }
-}
+
+    public function down(): void
+    {
+        Schema::dropIfExists('users');
+    }
+};
