@@ -28,22 +28,26 @@
     @include('components.mini-cart')
 
     <div id="cart-added-popup" class="cart-added-popup" role="dialog" aria-modal="true" aria-labelledby="popup-title" aria-hidden="true" style="display: none;">
-        <div class="cart-added-popup__overlay" onclick="closeCartAddedPopup()"></div>
         <div class="cart-added-popup__content">
             <button class="cart-added-popup__close" onclick="closeCartAddedPopup()" aria-label="Cerrar">
-                <svg viewBox="0 0 24 24" width="20" height="20"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" fill="currentColor"/></svg>
+                <svg viewBox="0 0 24 24" width="16" height="16"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" fill="currentColor"/></svg>
             </button>
             <div class="cart-added-popup__body">
                 <div class="cart-added-popup__image" id="popup-product-image"></div>
                 <div class="cart-added-popup__details">
-                    <p class="cart-added-popup__title" id="popup-title">Se agregó al carrito</p>
                     <p class="cart-added-popup__name" id="popup-product-name"></p>
-                    <p class="cart-added-popup__price" id="popup-product-price"></p>
+                    <p class="cart-added-popup__message">se ha agregado a tu carrito</p>
+                    <div class="cart-added-popup__actions">
+                        <button class="cart-added-popup__icon-btn cart-added-popup__icon-btn--secondary" onclick="closeCartAddedPopup()" aria-label="Seguir comprando">
+                            <svg viewBox="0 0 24 24" width="18" height="18"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14z" fill="currentColor"/><path d="M11 7h2v4h4v2h-4v4h-2v-4H7v-2h4z" fill="currentColor"/></svg>
+                            <span class="cart-added-popup__tooltip cart-added-popup__tooltip--right">Seguir comprando</span>
+                        </button>
+                        <a href="{{ route('cart.index') }}" class="cart-added-popup__icon-btn" aria-label="Ver carrito">
+                            <svg viewBox="0 0 24 24" width="18" height="18"><path d="M18 6h-2c0-2.21-1.79-4-4-4S8 3.79 8 6H6c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-6-2c1.1 0 2 .9 2 2h-4c0-1.1.9-2 2-2zm6 16H6V8h2v2c0 .55.45 1 1 1s1-.45 1-1V8h4v2c0 .55.45 1 1 1s1-.45 1-1V8h2v12z" fill="currentColor"/></svg>
+                            <span class="cart-added-popup__tooltip">Ver carrito</span>
+                        </a>
+                    </div>
                 </div>
-            </div>
-            <div class="cart-added-popup__actions">
-                <a href="{{ route('cart.index') }}" class="cart-added-popup__btn cart-added-popup__btn--outline">Ver Carrito</a>
-                <a href="{{ route('checkout.index') }}" class="cart-added-popup__btn cart-added-popup__btn--primary">Finalizar Pedido</a>
             </div>
         </div>
     </div>
@@ -51,118 +55,169 @@
     <style>
     .cart-added-popup {
         position: fixed;
-        inset: 0;
+        top: 35px;
+        right: 12px;
         z-index: 10000;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        display: none;
     }
-    .cart-added-popup__overlay {
-        position: absolute;
-        inset: 0;
-        background: rgba(0,0,0,0.5);
+    .cart-added-popup[aria-hidden="false"] {
+        display: block;
     }
     .cart-added-popup__content {
         position: relative;
         background: #fff;
-        width: 90%;
-        max-width: 400px;
-        border-radius: 8px;
-        box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        border-radius: 0;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.15);
         animation: popupSlideIn 0.3s ease;
+        overflow: visible;
+        display: flex;
+        flex-direction: column;
+        width: 380px;
+        padding: 4px 0;
     }
     @keyframes popupSlideIn {
-        from { transform: translateY(20px); opacity: 0; }
-        to { transform: translateY(0); opacity: 1; }
+        from { transform: translateX(20px); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
     }
     .cart-added-popup__close {
         position: absolute;
-        top: 12px;
-        right: 12px;
-        background: none;
+        top: 6px;
+        right: 6px;
+        width: 18px;
+        height: 18px;
+        background: transparent;
         border: none;
         cursor: pointer;
-        padding: 4px;
-        border-radius: 50%;
-        color: #666;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #888;
+        transition: color 0.2s;
+        z-index: 2;
     }
     .cart-added-popup__close:hover {
-        background: #f5f5f5;
+        color: #333;
     }
     .cart-added-popup__body {
         display: flex;
-        gap: 16px;
-        padding: 24px;
-        align-items: center;
+        gap: 14px;
+        padding: 12px 16px 10px;
+        padding-right: 32px;
+        align-items: flex-start;
     }
     .cart-added-popup__image {
-        width: 80px;
-        height: 80px;
+        width: 110px;
+        height: 110px;
         flex-shrink: 0;
-        border-radius: 4px;
+        border-radius: 0;
         overflow: hidden;
-        background: #f5f5f5;
-    }
-    .cart-added-popup__image img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
+        background: #f0f0f0;
     }
     .cart-added-popup__details {
         flex: 1;
-    }
-    .cart-added-popup__title {
-        font-size: 12px;
-        color: #2e7d32;
-        font-weight: 600;
-        margin: 0 0 4px;
-        text-transform: uppercase;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
     }
     .cart-added-popup__name {
-        font-size: 14px;
-        font-weight: 600;
-        color: #000;
-        margin: 0 0 4px;
+        font-size: 16px;
+        font-weight: 700;
+        color: #111;
+        margin: 0;
+        line-height: 1.3;
     }
-    .cart-added-popup__price {
+    .cart-added-popup__message {
         font-size: 14px;
-        font-weight: 600;
-        color: #000;
+        font-weight: 500;
+        color: #555;
         margin: 0;
     }
     .cart-added-popup__actions {
         display: flex;
-        gap: 12px;
-        padding: 0 24px 24px;
+        gap: 8px;
+        margin-top: 4px;
     }
-    .cart-added-popup__btn {
-        flex: 1;
-        text-align: center;
-        padding: 12px 16px;
-        font-size: 14px;
-        font-weight: 700;
-        text-decoration: none;
-        border-radius: 4px;
-        text-transform: uppercase;
-    }
-    .cart-added-popup__btn--outline {
-        background: transparent;
-        color: #000;
-        border: 1px solid #000;
-    }
-    .cart-added-popup__btn--outline:hover {
-        background: #f5f5f5;
-    }
-    .cart-added-popup__btn--primary {
-        background: #000;
-        color: #fff;
-        border: 1px solid #000;
-    }
-    .cart-added-popup__btn--primary:hover {
+.cart-added-popup__icon-btn {
+        position: relative;
+        width: 40px;
+        height: 40px;
         background: #d12442;
-        border-color: #d12442;
+        border: none;
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        text-decoration: none;
+        flex-shrink: 0;
     }
-    </style>
+    .cart-added-popup__icon-btn svg {
+        transition: none;
+    }
+    .cart-added-popup__icon-btn--secondary {
+        background: #d12442;
+    }
+    .cart-added-popup__tooltip {
+        position: absolute;
+        left: calc(100% + 8px);
+        top: 50%;
+        transform: translateY(-50%);
+        background: #d12442;
+        color: #fff;
+        padding: 10px 18px;
+        border-radius: 0;
+        font-size: 16px;
+        font-weight: 600;
+        white-space: nowrap;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.2s, visibility 0.2s;
+        pointer-events: none;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+    .cart-added-popup__tooltip::after {
+        content: '';
+        position: absolute;
+        right: 100%;
+        top: 50%;
+        transform: translateY(-50%);
+        border: 8px solid transparent;
+        border-right-color: #d12442;
+    }
+    .cart-added-popup__tooltip--right {
+        left: calc(100% + 8px);
+        z-index: 10001;
+    }
+    .cart-added-popup__tooltip--right::after {
+        content: '';
+        position: absolute;
+        left: -16px;
+        top: 50%;
+        transform: translateY(-50%);
+        border: 8px solid transparent;
+        border-right-color: #d12442;
+    }
+    .cart-added-popup__icon-btn:hover .cart-added-popup__tooltip {
+        opacity: 1;
+        visibility: visible;
+    }
+    @media (max-width: 480px) {
+        .cart-added-popup {
+            top: auto;
+            bottom: 20px;
+            right: 10px;
+            left: 10px;
+        }
+        .cart-added-popup__content {
+            width: 100%;
+        }
+        .cart-added-popup__tooltip {
+            display: none;
+        }
+    }
+</style>
 
     <script>
     window.napoleonBasePath = '{{ rtrim(request()->getBaseUrl(), '/') }}';
@@ -204,10 +259,8 @@
         
         var nameEl = document.getElementById('popup-product-name');
         var imageEl = document.getElementById('popup-product-image');
-        var priceEl = document.getElementById('popup-product-price');
         
         if (nameEl) nameEl.textContent = productName || '';
-        if (priceEl) priceEl.textContent = productPrice || '';
         
         if (imageEl) {
             if (productImage) {
@@ -217,7 +270,7 @@
             }
         }
         
-        popup.style.display = 'flex';
+        popup.style.display = 'block';
         popup.setAttribute('aria-hidden', 'false');
         
         setTimeout(function() {
